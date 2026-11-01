@@ -1,0 +1,329 @@
+[index .html](https://github.com/user-attachments/files/34235807/index.html)
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ПЗ № 25 — Инженерный калькулятор дорожного строительства</title>
+<style>
+:root{--bg:#f4f7fc;--card:#fff;--text:#1a2634;--muted:#5c6b7a;--border:#ccd7e6;--primary:#1e6f9f;--accent:#e67e22;--result:#e1f0fa;--danger:#c0392b}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;line-height:1.5;padding:18px}
+.app{max-width:1100px;margin:auto}.header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.logo{font-size:24px;font-weight:700;color:var(--primary)}
+button{cursor:pointer;border:0;border-radius:9px;padding:11px 16px;font-weight:700;font-size:14px}
+.theme{background:var(--card);border:1px solid var(--border);color:var(--text)}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;background:var(--card);padding:7px;border:1px solid var(--border);border-radius:14px}
+.tab{flex:1 1 190px;background:transparent;color:var(--muted)}.tab.active{background:var(--primary);color:#fff}
+.module{display:none;margin-top:14px}.module.active{display:block}.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px}
+h1,h2{margin:0 0 7px}.subtitle{color:var(--muted);margin:0 0 18px}
+.formula{display:inline-block;background:#eef3f8;border:1px solid var(--border);border-radius:20px;padding:5px 11px;font-family:monospace;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.field label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}.field input{width:100%;padding:11px;border:1px solid var(--border);border-radius:8px;font-size:16px}
+.error{min-height:18px;color:var(--danger);font-size:12px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.primary{background:var(--primary);color:#fff}.secondary{background:#e8edf2;color:var(--text)}.dark{background:#1f2937;color:#fff}
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.result{background:var(--result);border:1px solid var(--border);border-left:5px solid var(--primary);border-radius:10px;padding:16px}.result.highlight{border-left-color:var(--accent)}.label{font-size:12px;text-transform:uppercase;font-weight:700;color:var(--muted)}.value{font-size:25px;font-weight:800;margin-top:3px}.note{font-size:12px;color:var(--muted);margin-top:4px}
+.report table{width:100%;border-collapse:collapse;margin-top:14px}.report th,.report td{border:1px solid var(--border);padding:9px;text-align:left;vertical-align:top}.report th{background:#eef3f8}
+.notice{margin-top:12px;padding:10px;border-radius:8px;background:#fff4e5;border:1px solid #f2c48a}
+.hidden{display:none}
+.darkmode{--bg:#0f1a24;--card:#1a2a3a;--text:#eef4fa;--muted:#a9bbcb;--border:#33495f;--result:#0d2e42}.darkmode .formula,.darkmode .report th{background:#233649}.darkmode .secondary{background:#2b3b4b;color:#fff}
+@media(max-width:700px){.grid,.results{grid-template-columns:1fr}.card{padding:17px}.header{align-items:flex-start;flex-direction:column}}
+@media print{body{background:#fff;color:#000;padding:0}.header,.tabs,.actions,.theme{display:none!important}.module{display:block!important}.card{border:0;box-shadow:none}.result{break-inside:avoid}}
+
+button:disabled{opacity:.6;cursor:wait}
+input:focus,button:focus-visible{outline:3px solid rgba(30,111,159,.25);outline-offset:2px}
+.field input:invalid:not(:placeholder-shown){border-color:var(--danger)}
+.notice{line-height:1.45}
+@media(max-width:480px){body{padding:10px}.logo{font-size:20px}.tab{flex-basis:100%}.value{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+<div class="logo">🛣️ Инженерный калькулятор — ПЗ № 25</div>
+<button class="theme" id="themeBtn" type="button">🌙 Тёмная тема</button>
+</header>
+
+<nav class="tabs" aria-label="Навигация">
+<button class="tab active" data-tab="m1" type="button">Модуль 1: Доставка асфальтобетона</button>
+<button class="tab" data-tab="m2" type="button">Модуль 2: Осевые нагрузки</button>
+<button class="tab" data-tab="m3" type="button">Модуль 3: Логистика рейса</button>
+<button class="tab" data-tab="m4" type="button">Модуль 4: Земляные работы</button>
+<button class="tab" data-tab="report" type="button">Сводный отчёт</button>
+</nav>
+
+<section class="module active" id="m1">
+<div class="card">
+<h2>Модуль 1: Доставка асфальтобетона</h2>
+<p class="subtitle">Расчёт массы смеси и необходимого количества рейсов. Исходные данные можно менять; десятичные значения вводятся через запятую или точку.</p>
+<div class="formula">M = S × (h / 100) × ρ;&nbsp;&nbsp; N = ⌈M / G⌉</div>
+<div class="grid">
+<div class="field"><label>Площадь укладки, м²</label><input id="s" value="1000" type="text" inputmode="decimal"><div class="error" id="es"></div></div>
+<div class="field"><label>Толщина слоя, см</label><input id="h" value="5" type="text" inputmode="decimal"><div class="error" id="eh"></div></div>
+<div class="field"><label>Плотность смеси, т/м³</label><input id="rho" value="2,4" type="text" inputmode="decimal"><div class="error" id="erho"></div></div>
+<div class="field"><label>Грузоподъёмность самосвала, т</label><input id="g" value="20" type="text" inputmode="decimal"><div class="error" id="eg"></div></div>
+</div>
+<div class="actions"><button class="primary" id="calc1" type="button">📊 Рассчитать</button><button class="secondary" id="reset1" type="button">🔄 Сброс</button><button class="dark" id="print1" type="button">🖨 Печать</button></div>
+<div class="results">
+<div class="result highlight"><div class="label">Масса смеси</div><div class="value" id="mass">120,0 т</div><div class="note">итог расчёта</div></div>
+<div class="result"><div class="label">Количество рейсов</div><div class="value" id="trips">6 шт.</div><div class="note">округление вверх</div></div>
+<div class="result"><div class="label">Масса последнего рейса</div><div class="value" id="last">20,0 т</div><div class="note">контроль загрузки</div></div>
+</div>
+<div class="actions"><button class="primary" id="toM2" type="button">➡ Передать массу в Модуль 2</button></div>
+</div>
+</section>
+
+<section class="module" id="m2">
+<div class="card">
+<h2>Модуль 2: Осевые нагрузки</h2>
+<p class="subtitle">Проверка нагрузки на одну ось. Масса автоматически может поступить из Модуля 1.</p>
+<div class="formula">P<sub>ось</sub> = M / N;&nbsp;&nbsp; Δ% = (P<sub>ось</sub> − P<sub>н</sub>) / P<sub>н</sub> × 100</div>
+<div class="grid">
+<div class="field"><label>Полная масса, т</label><input id="m" value="120" type="text" inputmode="decimal"><div class="error" id="em"></div></div>
+<div class="field"><label>Количество осей, шт.</label><input id="axles" value="5" type="text" inputmode="decimal"><div class="error" id="eaxles"></div></div>
+<div class="field"><label>Норматив на ось, т</label><input id="norm" value="10" type="text" inputmode="decimal"><div class="error" id="enorm"></div></div>
+<div class="field"><label>Расстояние до объекта, км <span style="font-weight:400">(для передачи в М3)</span></label><input id="distance" value="45" type="text" inputmode="decimal"><div class="error" id="edistance"></div></div>
+</div>
+<div class="actions"><button class="primary" id="calc2" type="button">📊 Рассчитать</button><button class="secondary" id="reset2" type="button">🔄 Сброс</button></div>
+<div class="results">
+<div class="result highlight"><div class="label">Нагрузка на ось</div><div class="value" id="axleLoad">24,0 т</div><div class="note">M / N</div></div>
+<div class="result"><div class="label">Отклонение от норматива</div><div class="value" id="overload">140,0 %</div><div class="note">относительно норматива</div></div>
+<div class="result"><div class="label">Расстояние</div><div class="value" id="distanceOut">45,0 км</div><div class="note">передаётся в М3</div></div>
+</div>
+<div class="actions"><button class="primary" id="toM3" type="button">➡ Передать расстояние в Модуль 3</button></div>
+</div>
+</section>
+
+<section class="module" id="m3">
+<div class="card">
+<h2>Модуль 3: Логистика рейса</h2>
+<p class="subtitle">Расчёт времени одного рейса по формуле из банка задач.</p>
+<div class="formula">T = 2L / V × 60 + t<sub>погр</sub> + t<sub>разгр</sub></div>
+<div class="grid">
+<div class="field"><label>Расстояние, км</label><input id="l" value="45" type="text" inputmode="decimal"><div class="error" id="el"></div></div>
+<div class="field"><label>Средняя скорость, км/ч</label><input id="v" value="40" type="text" inputmode="decimal"><div class="error" id="ev"></div></div>
+<div class="field"><label>Время погрузки, мин</label><input id="load" value="25" type="text" inputmode="decimal"><div class="error" id="eload"></div></div>
+<div class="field"><label>Время разгрузки, мин</label><input id="unload" value="15" type="text" inputmode="decimal"><div class="error" id="eunload"></div></div>
+</div>
+<div class="actions"><button class="primary" id="calc3" type="button">📊 Рассчитать</button><button class="secondary" id="reset3" type="button">🔄 Сброс</button></div>
+<div class="results">
+<div class="result highlight"><div class="label">Время рейса</div><div class="value" id="tripTime">2,92 ч</div><div class="note">по формуле банка</div></div>
+<div class="result"><div class="label">Время рейса</div><div class="value" id="tripMinutes">175,0 мин</div><div class="note">для контроля</div></div>
+<div class="result"><div class="label">Расстояние</div><div class="value" id="lOut">45,0 км</div><div class="note">получено из М2</div></div>
+</div>
+</div>
+</section>
+
+
+<section class="module" id="m4">
+<div class="card">
+<h2>Модуль 4: Учёт земляных работ</h2>
+<p class="subtitle">Заполните четыре поля. Запись будет отправлена в Google Таблицу на лист «Журнал».</p>
+<div class="formula">Проверка: объём земляных работ &gt; 0 м³</div>
+
+<form id="module4Form">
+<div class="grid">
+<div class="field">
+<label for="m4Date">Дата</label>
+<input id="m4Date" type="date" name="Дата" required>
+</div>
+<div class="field">
+<label for="m4Site">Участок</label>
+<input id="m4Site" type="text" name="Участок" placeholder="Например, участок № 1" required>
+</div>
+<div class="field">
+<label for="m4Volume">Объём, м³</label>
+<input id="m4Volume" type="number" name="Объём" min="0.01" step="0.01" placeholder="Например, 125.5" required>
+</div>
+<div class="field">
+<label for="m4Executor">Исполнитель</label>
+<input id="m4Executor" type="text" name="Исполнитель" placeholder="ФИО исполнителя" required>
+</div>
+</div>
+<div class="actions">
+<button class="primary" type="submit" id="module4Submit">☁ Сохранить в таблицу</button>
+<button class="secondary" type="reset">Очистить форму</button>
+</div>
+<p id="module4Message" role="status" aria-live="polite" style="margin-top:12px;font-weight:700"></p>
+</form>
+<div class="notice">Важно: из-за режима безопасной отправки браузер не показывает ответ Google Apps Script. После сообщения об отправке откройте таблицу и убедитесь, что новая строка появилась на листе «Журнал».</div>
+</div>
+</section>
+
+<section class="module" id="report">
+<div class="card report">
+<h2>Сводный отчёт</h2>
+<p class="subtitle">Текущие данные и результаты расчётных модулей. Сводный отчёт сохраняется на листе «Сводный отчёт», а записи Модуля 4 — на листе «Журнал».</p>
+<div class="actions"><button class="primary" id="refreshReport" type="button">↻ Сформировать отчёт</button><button class="secondary" id="saveProject" type="button">💾 Сохранить проект</button><button class="secondary" id="csvReport" type="button">⬇ Скачать CSV</button><button class="dark" id="printReport" type="button">🖨 Печать / PDF</button></div>
+<table>
+<thead><tr><th>Модуль</th><th>Входные данные</th><th>Результаты</th></tr></thead>
+<tbody id="reportBody"></tbody>
+</table>
+<div class="notice">Для варианта №1 масса смеси передаётся из Модуля 1 в Модуль 2, а расстояние — из Модуля 2 в Модуль 3. Расстояние является отдельным входом М2, поскольку формула осевых нагрузок его не рассчитывает.</div>
+<div class="notice" style="background:var(--card);border-color:var(--border)"><strong>Автоматическое сохранение</strong><p class="subtitle" style="margin:6px 0 10px">Адрес подключения уже настроен. Нажми кнопку ниже, чтобы сохранить текущие расчёты в таблицу.</p><div class="actions"><button class="primary" id="sendSheets" type="button">☁ Сохранить сводный отчёт в Google Таблицы</button></div><div id="sheetsStatus" role="status" aria-live="polite" style="margin-top:8px;font-size:13px"></div></div></div></section>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const num=id=>Number($(id).value.trim().replace(",","."));
+const fmt=(x,d=1)=>x.toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d});
+const tabs=document.querySelectorAll(".tab"), modules=document.querySelectorAll(".module");
+function show(id){modules.forEach(x=>x.classList.toggle("active",x.id===id));tabs.forEach(x=>x.classList.toggle("active",x.dataset.tab===id));updateReport();}
+tabs.forEach(b=>b.addEventListener("click",()=>show(b.dataset.tab)));
+$("themeBtn").addEventListener("click",()=>{document.body.classList.toggle("darkmode");$("themeBtn").textContent=document.body.classList.contains("darkmode")?"☀️ Светлая тема":"🌙 Тёмная тема";});
+function valid(ids){
+ let ok=true; ids.forEach(id=>{const x=num(id), e=$("e"+id); if(!Number.isFinite(x)||x<=0){e.textContent="Введите число больше нуля.";ok=false}else e.textContent=""}); return ok;
+}
+function calc1(){
+ if(!valid(["s","h","rho","g"]))return;
+ const S=num("s"),h=num("h"),rho=num("rho"),G=num("g");
+ const M=S*(h/100)*rho,N=Math.ceil(M/G),last=M-(N-1)*G;
+ $("mass").textContent=fmt(M)+" т";$("trips").textContent=N+" шт.";$("last").textContent=fmt(last)+" т";
+ localStorage.setItem("m1",JSON.stringify({S,h,rho,G,M,N}));
+ updateReport();
+}
+function calc2(){
+ if(!valid(["m","axles","norm","distance"]))return;
+ const M=num("m"),N=num("axles"),Pnorm=num("norm"),L=num("distance");
+ const P=M/N, delta=(P-Pnorm)/Pnorm*100;
+ $("axleLoad").textContent=fmt(P)+" т";$("overload").textContent=fmt(delta)+" %";$("distanceOut").textContent=fmt(L)+" км";
+ localStorage.setItem("m2",JSON.stringify({M,N,Pnorm,L,P,delta})); updateReport();
+}
+function calc3(){
+ if(!valid(["l","v","load","unload"]))return;
+ const L=num("l"),V=num("v"),tp=num("load"),tr=num("unload");
+ const T=2*L/V*60+tp+tr;
+ $("tripTime").textContent=fmt(T/60,2)+" ч";$("tripMinutes").textContent=fmt(T)+" мин";$("lOut").textContent=fmt(L)+" км";
+ localStorage.setItem("m3",JSON.stringify({L,V,tp,tr,T})); updateReport();
+}
+$("calc1").addEventListener("click",calc1);$("calc2").addEventListener("click",calc2);$("calc3").addEventListener("click",calc3);
+function reset1(){$("s").value=1000;$("h").value=5;$("rho").value="2,4";$("g").value=20;calc1()}function reset2(){$("m").value=120;$("axles").value=5;$("norm").value=10;$("distance").value=45;calc2()}function reset3(){$("l").value=45;$("v").value=40;$("load").value=25;$("unload").value=15;calc3()}
+$("reset1").addEventListener("click",reset1);$("reset2").addEventListener("click",reset2);$("reset3").addEventListener("click",reset3);
+$("print1").addEventListener("click",()=>window.print());
+$("toM2").addEventListener("click",()=>{calc1();$("m").value=$("mass").textContent.replace(" т","").replace(/\s/g,"").replace(",",".");calc2();show("m2")});
+$("toM3").addEventListener("click",()=>{calc2();$("l").value=num("distance");calc3();show("m3")});
+$("refreshReport").addEventListener("click",updateReport);
+$("saveProject").addEventListener("click",()=>{const state={s:$("s").value,h:$("h").value,rho:$("rho").value,g:$("g").value,m:$("m").value,axles:$("axles").value,norm:$("norm").value,distance:$("distance").value,l:$("l").value,v:$("v").value,load:$("load").value,unload:$("unload").value};localStorage.setItem("dashboardState",JSON.stringify(state));alert("Проект сохранён в этом браузере. Для переноса на другой компьютер скачайте CSV-отчёт.")});
+$("printReport").addEventListener("click",()=>window.print());
+function updateReport(){
+ const S=$("s").value,h=$("h").value,r=$("rho").value,G=$("g").value;
+ const M=num("s")*(num("h")/100)*num("rho"),N=Math.ceil(M/num("g"));
+ const P=num("m")/num("axles"),delta=(P-num("norm"))/num("norm")*100;
+ const T=2*num("l")/num("v")*60+num("load")+num("unload");
+ $("reportBody").innerHTML=
+ `<tr><td>М1 — Доставка асфальтобетона</td><td>S=${S} м²; h=${h} см; ρ=${r} т/м³; G=${G} т</td><td>M=${fmt(M)} т; N=${N} рейсов</td></tr>
+ <tr><td>М2 — Осевые нагрузки</td><td>M=${$("m").value} т; осей=${$("axles").value}; норма=${$("norm").value} т/ось; L=${$("distance").value} км</td><td>P<sub>ось</sub>=${fmt(P)} т; Δ=${fmt(delta)}%</td></tr>
+ <tr><td>М3 — Логистика рейса</td><td>L=${$("l").value} км; V=${$("v").value} км/ч; погр.=${$("load").value} мин; разг.=${$("unload").value} мин</td><td>T=${fmt(T/60,2)} ч (${fmt(T)} мин)</td></tr>`;
+}
+function reportData(){
+ const S=num("s"),h=num("h"),rho=num("rho"),G=num("g"),M=S*(h/100)*rho,N=Math.ceil(M/G),last=M-(N-1)*G;
+ const mass2=num("m"),axles=num("axles"),norm=num("norm"),distance=num("distance"),P=mass2/axles,delta=(P-norm)/norm*100;
+ const L=num("l"),V=num("v"),load=num("load"),unload=num("unload"),T=2*L/V*60+load+unload;
+ return {timestamp:new Date().toLocaleString("ru-RU"),module1:{area:S,thickness_cm:h,density_t_m3:rho,truck_capacity_t:G,mass_t:M,trips:N,last_trip_t:last},module2:{mass_t:mass2,axles:axles,norm_t_per_axle:norm,distance_km:distance,axle_load_t:P,deviation_percent:delta},module3:{distance_km:L,speed_kmh:V,loading_min:load,unloading_min:unload,trip_min:T,trip_hours:T/60}};
+}
+function csvEscape(v){const t=String(v??"");return '"'+t.replace(/"/g,'""')+'"';}
+$("csvReport").addEventListener("click",()=>{
+ const d=reportData();
+ const rows=[["Время формирования",d.timestamp],["Модуль","Показатель","Значение","Единица"],
+ ["М1","Площадь укладки",d.module1.area,"м²"],["М1","Толщина слоя",d.module1.thickness_cm,"см"],["М1","Плотность смеси",d.module1.density_t_m3,"т/м³"],["М1","Грузоподъёмность самосвала",d.module1.truck_capacity_t,"т"],["М1","Масса смеси",d.module1.mass_t,"т"],["М1","Количество рейсов",d.module1.trips,"шт."],["М1","Масса последнего рейса",d.module1.last_trip_t,"т"],
+ ["М2","Полная масса",d.module2.mass_t,"т"],["М2","Количество осей",d.module2.axles,"шт."],["М2","Норматив на ось",d.module2.norm_t_per_axle,"т/ось"],["М2","Нагрузка на ось",d.module2.axle_load_t,"т"],["М2","Отклонение от норматива",d.module2.deviation_percent,"%"],["М2","Расстояние до объекта",d.module2.distance_km,"км"],
+ ["М3","Средняя скорость",d.module3.speed_kmh,"км/ч"],["М3","Время погрузки",d.module3.loading_min,"мин"],["М3","Время разгрузки",d.module3.unloading_min,"мин"],["М3","Время рейса",d.module3.trip_min,"мин"],["М3","Время рейса",d.module3.trip_hours,"ч"]];
+ const csv='\\ufeff'+rows.map(r=>r.map(csvEscape).join(';')).join('\\r\\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='otchet_PZ25.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9aVyNQ5rBTQ053SZXe2cmXNMRFXaXqBMLY8T4sqDFJe_H1e7ZhiUReNz7P9UCv9y5/exec";
+
+function showStatus(element, message, ok=true) {
+  element.textContent = message;
+  element.style.color = ok ? "#267747" : "#a83a35";
+}
+
+async function sendToSheets(payload, statusElement, button) {
+  button.disabled = true;
+  showStatus(statusElement, "Отправка данных в Google Таблицы…", true);
+  try {
+    // text/plain avoids a CORS preflight. Apps Script receives the JSON in e.postData.contents.
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    });
+    showStatus(statusElement,
+      "Запрос отправлен. Из-за ограничений браузера подтверждение записи не читается автоматически. Проверь лист Google Таблицы.", true);
+    return true;
+  } catch (error) {
+    showStatus(statusElement,
+      "Не удалось отправить данные. Проверь интернет и публикацию Apps Script.", false);
+    return false;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// Сводный отчёт: отправляет все входные данные и результаты модулей 1–3.
+$("sendSheets").addEventListener("click", async () => {
+  const status = $("sheetsStatus");
+  const button = $("sendSheets");
+
+  if (!valid(["s","h","rho","g"]) ||
+      !valid(["m","axles","norm","distance"]) ||
+      !valid(["l","v","load","unload"])) {
+    showStatus(status, "Проверь поля: все числовые значения должны быть больше нуля.", false);
+    return;
+  }
+
+  calc1(); calc2(); calc3(); updateReport();
+  const data = reportData();
+  await sendToSheets({type:"summary", report:data}, status, button);
+});
+
+// Модуль 4: автоматически отправляет запись в лист «Журнал».
+const module4Form = $("module4Form");
+const module4Message = $("module4Message");
+if (!$("m4Date").value) $("m4Date").value = new Date().toISOString().slice(0, 10);
+module4Form.addEventListener("reset", () => setTimeout(() => { $("m4Date").value = new Date().toISOString().slice(0, 10); }, 0));
+
+module4Form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!module4Form.reportValidity()) return;
+
+  const fields = {};
+  new FormData(module4Form).forEach((value, key) => {
+    fields[key] = String(value).trim();
+  });
+
+  if (Object.values(fields).some(value => !value)) {
+    showStatus(module4Message, "Заполни все поля формы.", false);
+    return;
+  }
+
+  const volume = Number(String(fields["Объём"]).replace(",", "."));
+  if (!Number.isFinite(volume) || volume <= 0) {
+    showStatus(module4Message, "Объём должен быть числом больше нуля.", false);
+    $("m4Volume").focus();
+    return;
+  }
+
+  const button = $("module4Submit");
+  const ok = await sendToSheets({
+    type: "earthwork",
+    module: "Вариант 1. Учёт земляных работ",
+    fields
+  }, module4Message, button);
+
+  if (ok) {
+    module4Form.reset();
+    $("m4Date").value = new Date().toISOString().slice(0, 10);
+  }
+});
+
+
+function restore(){
+ try{
+  const s=JSON.parse(localStorage.getItem("dashboardState"));if(s){Object.keys(s).forEach(k=>{if($(k))$(k).value=s[k];});}
+ }catch(e){}
+ calc1();calc2();calc3();updateReport();
+}
+restore();
+</script>
+</body>
+</html>
